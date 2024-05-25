@@ -14,7 +14,7 @@ Este repositorio consta de 3 archivos principales: `producer.py`, `consumer.py` 
 
 Luego tenemos `docker-compose.yml`. Este archivo se ejecuta en la línea de comandos como un comando de Docker. Deben estar en la carpeta donde se encuentra el archivo y usar:
 
-  docker compose -f <nombre_del_archivo> up
+    docker compose -f <nombre_del_archivo> up
 
 Esto crea el contenedor con Kafka y Zookeeper. Deben dejar esa consola abierta para que funcionen. Si necesitan hacer otra cosa, abran otra consola.
 
