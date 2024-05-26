@@ -12,5 +12,10 @@ def delete_topic(topic):
 # Nombre del tema que deseas purgar
 topic = 'marvel_topic'
 
+
 # Eliminar el tema
+delete_topic(topic)
+
+topic = 'weather_topic'
+
 delete_topic(topic)
