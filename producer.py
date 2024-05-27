@@ -27,6 +27,11 @@ def get_marvel_data(page):
     response = requests.get(marvel_url)
     return response.json()
 
+def get_pokemon_data(pokemon_id):
+    pokemon_url = f"https://pokeapi.co/api/v2/pokemon/{pokemon_id}"
+    response = requests.get(pokemon_url)
+    return response.json()
+
 # Función para obtener datos de OpenWeather
 def get_openweather_data(city_name):
     # Ajustar la URL para incluir la ciudad de interés
@@ -35,6 +40,7 @@ def get_openweather_data(city_name):
     return response.json()
 
 # Publicar mensajes en Kafka
+
 while marvel_page < 3:
     # Obtener datos de Marvel para la página actual
     marvel_data = get_marvel_data(marvel_page)
@@ -48,8 +54,14 @@ while marvel_page < 3:
     
 
     time.sleep(1)  # Esperar un minuto antes de la próxima llamada
-print("Mensajes de marvel enviados a Kafka")
-# Haz una lista con todas las ciudades de mexico para obtener el clima de openweathermap
+
+for pokemon_id in range(1, 151):
+    pokemon_data = get_pokemon_data(pokemon_id)
+    producer.send('pokemon_topic', value=pokemon_data)
+    print(f"Pokémon data sent to Kafka for Pokémon ID: {pokemon_id}")
+print("Mensajes de Pokémon enviados a Kafka")
+   
+#lista con todas las ciudades de mexico para obtener el clima de openweathermap
 mexico_cities = ["Aguascalientes", "Baja California", "Baja California Sur", "Campeche", "Chiapas", "Chihuahua", "Ciudad de Mexico","Coahuila", "Colima", "Durango", "Estado de México", "Estado de Guanajuato", "Guerrero", "Hidalgo", "Jalisco", "Michoacán", "Morelos", "Nayarit", "Nuevo León", "Estado de Oaxaca", "Puebla", "Querétaro", "Quintana Roo", "San Luis Potosí", "Sinaloa", "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala", "Veracruz", "Yucatán", "Estado de Zacatecas"]
 for city in mexico_cities:
         weather_data = get_openweather_data(city)

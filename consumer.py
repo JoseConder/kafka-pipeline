@@ -4,8 +4,9 @@ from pymongo import MongoClient
 
 # Configuración del consumidor de Kafka
 consumer = KafkaConsumer(
-    'marvel_topic',
+    'pokemon_topic',
     'weather_topic',
+    'marvel_topic',
     group_id='my_consumer_group',
     bootstrap_servers='localhost:9092',
     value_deserializer=lambda x: json.loads(x.decode('utf-8')),
@@ -22,35 +23,26 @@ marvel_collection = db.marvel_data
 marvel_collection.create_index('name', unique=True)
 weather_collection = db.weather_data
 weather_collection.create_index('state', unique=True)
-
+pokemon_collection = db.pokemon_data
+pokemon_collection.create_index('name', unique=True)
 
 # Consumir y almacenar mensajes en MongoDB
 for message in consumer:
     topic = message.topic
     print(f"Recibido mensaje de {topic}")
-    if topic == 'marvel_topic':
-    # Extraer solo los datos necesarios
+    
+    if topic == 'pokemon_topic':
         try:
-            characters = []
-            for character in message.value['data']['results']:
-                character_data = {
-                    'name': character['name'],
-                    'comics_count': character['comics']['available'],
-                    'series_count': character['series']['available']
-                }
-                characters.append(character_data)
-            
-            # Almacenar en MongoDB
-            marvel_collection.insert_many(characters)
-            
-            # Confirmar el offset manualmente después de procesar cada mensaje
+            pokemon_data = {
+                'name': message.value['name'],
+                'types': [ptype['type']['name'] for ptype in message.value['types']]
+            }
+            pokemon_collection.insert_one(pokemon_data)
             consumer.commit()
-
         except KeyError as e:
-            print("Conde gay",e )
-            continue
+            print("Error al procesar datos de Pokémon", e)
         except Exception as e:
-            print("Documento duplicado, abortando insercion")
+            print("Documento duplicado, abortando inserción")
     
     elif topic == 'weather_topic':
         try:
@@ -62,8 +54,22 @@ for message in consumer:
             weather_collection.insert_one(weather_data)
             consumer.commit()
         except KeyError as e:
-            print("error general", e)
+            print("Error general", e)
         except Exception as e:
-            print("Documento duplicado, abortando insercion")
+            print("Documento duplicado, abortando inserción")
+
+    elif topic == 'marvel_topic':
+        try:
+            marvel_data = {
+                'name': message.value['name'],
+                'comics_count': message.value['comics']['available'],
+                'series_count': message.value['series']['available']
+            }
+            marvel_collection.insert_one(marvel_data)
+            consumer.commit()
+        except KeyError as e:
+            print("Error general", e)
+        except Exception as e:
+            print("Documento duplicado, abortando inserción")
 
 
