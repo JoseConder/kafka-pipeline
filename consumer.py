@@ -4,9 +4,9 @@ from pymongo import MongoClient
 
 # Configuración del consumidor de Kafka
 consumer = KafkaConsumer(
-    'pokemon_topic',
-    'weather_topic',
     'marvel_topic',
+    'weather_topic',
+    'pokemon_topic',
     group_id='my_consumer_group',
     bootstrap_servers='localhost:9092',
     value_deserializer=lambda x: json.loads(x.decode('utf-8')),
@@ -60,12 +60,15 @@ for message in consumer:
 
     elif topic == 'marvel_topic':
         try:
-            marvel_data = {
-                'name': message.value['name'],
-                'comics_count': message.value['comics']['available'],
-                'series_count': message.value['series']['available']
-            }
-            marvel_collection.insert_one(marvel_data)
+            characters = []
+            for character in message.value['data']['results']:
+                character_data = {
+                    'name': character['name'],
+                    'comics_count': character['comics']['available'],
+                    'series_count': character['series']['available']
+                }   
+                characters.append(character_data)
+            marvel_collection.insert_many(characters)
             consumer.commit()
         except KeyError as e:
             print("Error general", e)
